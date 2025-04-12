@@ -1,11 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const gestosController = require("../controllers/gestoscontrollers");
+const gestosController = require('../controllers/gestoscontrollers');
 
-router.get("/", gestosController.getAllGestos);
-router.get("/:id", gestosController.getGestoById);
-router.post("/", gestosController.createGesto);
-router.put("/:id", gestosController.updateGesto);
-router.delete("/:id", gestosController.deleteGesto);
+router.post('/gestos', gestosController.createGesto);
+router.get('/gestos', gestosController.getGestos);
+router.put('/gestos/:id', gestosController.updateGesto);
+router.delete('/gestos/:id', gestosController.deleteGesto);
 
 module.exports = router;

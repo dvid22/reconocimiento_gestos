@@ -1,61 +1,97 @@
-const API_URL = "http://localhost:3000/api/gestos";
+document.addEventListener('DOMContentLoaded', () => {
+  const gestosForm = document.getElementById('gestos-form');
+  const gestosList = document.getElementById('gestos-list');
+  const videoElement = document.getElementById('video');
+  const resultsDiv = document.getElementById('results');
 
-// Leer todos los gestos
-const getGestos = async () => {
-  const res = await fetch(API_URL);
-  const data = await res.json();
-  document.getElementById("lista").innerHTML = data.map(g =>
-    `<li>${g.nombre} - ${g.descripcion}
-      <button onclick="editar(${g.id})">✏️</button>
-      <button onclick="eliminar(${g.id})">🗑️</button>
-    </li>`).join('');
-};
+  // Cargar gestos al inicio
+  cargarGestos();
 
-// Crear gesto
-const crearGesto = async () => {
-  const nombre = document.getElementById("nombre").value;
-  const descripcion = document.getElementById("descripcion").value;
-  const id = Date.now();
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, nombre, descripcion })
+  // Guardar nuevo gesto (CREATE)
+  gestosForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById('nombre').value;
+    const descripcion = document.getElementById('descripcion').value;
+    const imagenInput = document.getElementById('imagen');
+
+    if (imagenInput.files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const nuevoGesto = {
+          id: Date.now().toString(),
+          nombre,
+          descripcion,
+          imagenUrl: e.target.result
+        };
+        guardarGesto(nuevoGesto);
+        gestosForm.reset();
+      };
+      reader.readAsDataURL(imagenInput.files[0]);
+    } else {
+      alert('¡Sube una imagen del gesto!');
+    }
   });
-  getGestos();
+
+  // Cargar gestos (READ)
+  function cargarGestos() {
+    const gestos = obtenerGestos();
+    gestosList.innerHTML = '';
+    gestos.forEach(gesto => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <h3>${gesto.nombre}</h3>
+        <p>${gesto.descripcion}</p>
+        <img src="${gesto.imagenUrl}" width="100">
+        <button onclick="editarGesto('${gesto.id}')">Editar</button>
+        <button onclick="eliminarGesto('${gesto.id}')">Eliminar</button>
+      `;
+      gestosList.appendChild(li);
+    });
+  }
+
+  // Iniciar cámara (simulación)
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        videoElement.srcObject = stream;
+        setInterval(() => {
+          resultsDiv.textContent = "Simulación: Gesto detectado 'Hola'";
+        }, 2000);
+      });
+  }
+});
+
+// Funciones CRUD con localStorage
+function obtenerGestos() {
+  return JSON.parse(localStorage.getItem('gestos')) || [];
+}
+
+function guardarGesto(gesto) {
+  const gestos = obtenerGestos();
+  gestos.push(gesto);
+  localStorage.setItem('gestos', JSON.stringify(gestos));
+  cargarGestos();
+}
+
+// Funciones globales para editar/eliminar
+window.editarGesto = (id) => {
+  const gestos = obtenerGestos();
+  const gesto = gestos.find(g => g.id === id);
+  const nombre = prompt('Nuevo nombre:', gesto.nombre);
+  const descripcion = prompt('Nueva descripción:', gesto.descripcion);
+
+  if (nombre && descripcion) {
+    gesto.nombre = nombre;
+    gesto.descripcion = descripcion;
+    localStorage.setItem('gestos', JSON.stringify(gestos));
+    location.reload();
+  }
 };
 
-// Eliminar gesto
-const eliminar = async (id) => {
-  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-  getGestos();
+window.eliminarGesto = (id) => {
+  if (confirm('¿Eliminar este gesto?')) {
+    const gestos = obtenerGestos().filter(g => g.id !== id);
+    localStorage.setItem('gestos', JSON.stringify(gestos));
+    location.reload();
+  }
 };
-
-// Editar gesto
-let gestoEditando = null;
-const editar = async (id) => {
-  const res = await fetch(`${API_URL}/${id}`);
-  const gesto = await res.json();
-  document.getElementById("nombre").value = gesto.nombre;
-  document.getElementById("descripcion").value = gesto.descripcion;
-  gestoEditando = id;
-};
-
-const actualizarGesto = async () => {
-  if (!gestoEditando) return;
-  await fetch(`${API_URL}/${gestoEditando}`, {
-    method: "PUT",
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      nombre: document.getElementById("nombre").value,
-      descripcion: document.getElementById("descripcion").value
-    })
-  });
-  gestoEditando = null;
-  getGestos();
-};
-
-document.getElementById("crearBtn").onclick = crearGesto;
-document.getElementById("actualizarBtn").onclick = actualizarGesto;
-
-getGestos();
-  

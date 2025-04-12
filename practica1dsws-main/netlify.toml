@@ -1,8 +1,8 @@
 [build]
-  functions = "netlify/functions"
   publish = "."
+  command = "echo 'No build needed'"
 
 [[redirects]]
-  from = "/api/gestos"
-  to = "/.netlify/functions/gestos"
+  from = "/*"
+  to = "/index.html"
   status = 200

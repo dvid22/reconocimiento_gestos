@@ -1,75 +1,34 @@
-let gestos = [];
+let gestos = []; // Simula una DB en memoria
 
-exports.handler = async function(event, context) {
-  const { httpMethod, path, queryStringParameters, body } = event;
+exports.handler = async (event) => {
+  const { httpMethod, body, queryStringParameters } = event;
 
-  const getIdFromPath = () => {
-    const matches = path.match(/\/gestos\/(\d+)/);
-    return matches ? parseInt(matches[1]) : null;
-  };
+  try {
+    switch (httpMethod) {
+      case 'GET':
+        return { statusCode: 200, body: JSON.stringify(gestos) };
 
-  switch (httpMethod) {
-    case "GET":
-      if (queryStringParameters && queryStringParameters.id) {
-        const id = parseInt(queryStringParameters.id);
-        const gesto = gestos.find(g => g.id === id);
-        if (gesto) {
-          return {
-            statusCode: 200,
-            body: JSON.stringify(gesto),
-          };
-        } else {
-          return {
-            statusCode: 404,
-            body: JSON.stringify({ message: "Gesto no encontrado" }),
-          };
-        }
-      }
-      return {
-        statusCode: 200,
-        body: JSON.stringify(gestos),
-      };
+      case 'POST':
+        const nuevoGesto = JSON.parse(body);
+        gestos.push({ ...nuevoGesto, id: Date.now().toString() });
+        return { statusCode: 201, body: JSON.stringify(nuevoGesto) };
 
-    case "POST":
-      const nuevo = JSON.parse(body);
-      gestos.push(nuevo);
-      return {
-        statusCode: 201,
-        body: JSON.stringify(nuevo),
-      };
+      case 'PUT':
+        const { id } = queryStringParameters;
+        const gestoActualizado = JSON.parse(body);
+        gestos = gestos.map(gesto => 
+          gesto.id === id ? { ...gesto, ...gestoActualizado } : gesto
+        );
+        return { statusCode: 200, body: JSON.stringify(gestos) };
 
-    case "PUT":
-      const idToUpdate = getIdFromPath();
-      if (!idToUpdate) {
-        return { statusCode: 400, body: "ID no especificado" };
-      }
+      case 'DELETE':
+        gestos = gestos.filter(gesto => gesto.id !== queryStringParameters.id);
+        return { statusCode: 200, body: JSON.stringify(gestos) };
 
-      const datosActualizados = JSON.parse(body);
-      const indexToUpdate = gestos.findIndex(g => g.id === idToUpdate);
-
-      if (indexToUpdate === -1) {
-        return { statusCode: 404, body: "Gesto no encontrado" };
-      }
-
-      gestos[indexToUpdate] = { ...gestos[indexToUpdate], ...datosActualizados };
-      return {
-        statusCode: 200,
-        body: JSON.stringify(gestos[indexToUpdate]),
-      };
-
-    case "DELETE":
-      const idToDelete = getIdFromPath();
-      if (!idToDelete) {
-        return { statusCode: 400, body: "ID no especificado" };
-      }
-
-      gestos = gestos.filter(g => g.id !== idToDelete);
-      return { statusCode: 204, body: "" };
-
-    default:
-      return {
-        statusCode: 405,
-        body: JSON.stringify({ message: "Método no permitido" }),
-      };
+      default:
+        return { statusCode: 405, body: "Method Not Allowed" };
+    }
+  } catch (error) {
+    return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
   }
 };

@@ -1,33 +1,38 @@
-let gestos = [];
+const Gestos = require('../models/gestos');
 
-exports.getAllGestos = (req, res) => {
-  res.json(gestos);
-};
-
-exports.getGestoById = (req, res) => {
-  const gesto = gestos.find(g => g.id === parseInt(req.params.id));
-  gesto ? res.json(gesto) : res.status(404).send("Gesto no encontrado");
-};
-
-exports.createGesto = (req, res) => {
-  const { id, nombre, descripcion } = req.body;
-  const nuevoGesto = { id, nombre, descripcion };
-  gestos.push(nuevoGesto);
-  res.status(201).json(nuevoGesto);
-};
-
-exports.updateGesto = (req, res) => {
-  const gesto = gestos.find(g => g.id === parseInt(req.params.id));
-  if (gesto) {
-    gesto.nombre = req.body.nombre;
-    gesto.descripcion = req.body.descripcion;
-    res.json(gesto);
-  } else {
-    res.status(404).send("Gesto no encontrado");
+exports.createGesto = async (req, res) => {
+  try {
+    const newGesto = new Gestos(req.body);
+    await newGesto.save();
+    res.status(201).json(newGesto);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };
 
-exports.deleteGesto = (req, res) => {
-  gestos = gestos.filter(g => g.id !== parseInt(req.params.id));
-  res.status(204).send();
+exports.getGestos = async (req, res) => {
+  try {
+    const gestos = await Gestos.find();
+    res.status(200).json(gestos);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.updateGesto = async (req, res) => {
+  try {
+    const gesto = await Gestos.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json(gesto);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.deleteGesto = async (req, res) => {
+  try {
+    await Gestos.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
