@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Traductor de Lengua de Señas</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>🖐️ Traductor de Lengua de Señas</h1>
+      <p>Reconocimiento de gestos en tiempo real con gestión de base de datos</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SECCIÓN DE CÁMARA Y RECONOCIMIENTO -->
+    <section class="card">
+      <h2>1️⃣ Reconocimiento de Gestos</h2>
+      <p>Activa la cámara y detecta gestos automáticamente.</p>
+      <video id="video" autoplay></video>
+      <div class="center">
+        <button id="iniciar">🎥 Iniciar Reconocimiento</button>
+      </div>
+    </section>
+
+    <!-- RESULTADO -->
+    <section class="card resultado-section">
+      <h2>🧠 Resultado Detectado</h2>
+      <div id="resultado" class="resultado">Esperando gesto...</div>
+    </section>
+
+    <!-- FORMULARIO DE GESTOS -->
+    <section class="card">
+      <h2>✍️ Registrar Nuevo Gesto</h2>
+      <form id="formulario">
+        <input type="number" id="id" placeholder="ID único del gesto" required />
+        <input type="text" id="nombre" placeholder="Nombre del gesto" required />
+        <input type="text" id="descripcion" placeholder="Descripción del gesto" required />
+        <button type="submit">💾 Guardar Gesto</button>
+      </form>
+    </section>
+
+    <!-- BOTONES CRUD -->
+    <section class="card">
+      <h2>🛠️ Gestionar Gestos</h2>
+      <div class="botones-crud">
+        <button onclick="leerGesto()">📖 Leer Gesto</button>
+        <button onclick="actualizarGesto()">🔁 Actualizar Gesto</button>
+        <button onclick="eliminarGesto()">🗑️ Eliminar Gesto</button>
+        <button onclick="listarGestos()">📋 Ver Todos</button>
+      </div>
+    </section>
+
+    <!-- LISTA DE GESTOS -->
+    <section class="card">
+      <h2>📋 Lista de Gestos</h2>
+      <div id="lista-gestos" class="lista-gestos">No hay gestos cargados aún.</div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 Proyecto de Lengua de Señas | Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="./frontend/script.js"></script>
+</body>
+</html>
